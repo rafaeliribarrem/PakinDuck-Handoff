@@ -17,6 +17,125 @@ export interface DimensionInputProps {
   onUnitChange?: (unit: string) => void;
 }
 
+const UNIT_DECIMALS: Record<string, number> = {
+  Cm: 1,
+  m: 2,
+  mm: 0,
+  in: 2,
+};
+
+function getDecimals(unit: string): number {
+  return UNIT_DECIMALS[unit] ?? 2;
+}
+
+function maskNumeric(value: string, decimals: number): string {
+  // Allow only digits and a single decimal point
+  let cleaned = value.replace(/[^0-9.]/g, "");
+  const parts = cleaned.split(".");
+  if (parts.length > 2) {
+    cleaned = parts[0] + "." + parts.slice(1).join("");
+  }
+  // Limit decimal places while typing
+  if (decimals === 0) {
+    cleaned = cleaned.split(".")[0];
+  } else if (parts.length === 2 && parts[1].length > decimals) {
+    cleaned = parts[0] + "." + parts[1].slice(0, decimals);
+  }
+  return cleaned;
+}
+
+function formatOnBlur(value: string, decimals: number): string {
+  if (value === "") return "";
+  const num = parseFloat(value);
+  if (isNaN(num)) return "";
+  if (decimals === 0) return Math.round(num).toString();
+  return num.toFixed(decimals);
+}
+
+const fontStyle: React.CSSProperties = {
+  fontSize: "18px",
+  fontFamily: "'Halyard Display', sans-serif",
+  fontWeight: 400,
+};
+
+function DimensionField({
+  value,
+  placeholder,
+  disabled,
+  decimals,
+  onValueChange,
+  onFocus,
+  onBlur,
+}: {
+  value: string;
+  placeholder: string;
+  disabled: boolean;
+  decimals: number;
+  onValueChange: (val: string) => void;
+  onFocus: () => void;
+  onBlur: () => void;
+}) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const masked = maskNumeric(e.target.value, decimals);
+    onValueChange(masked);
+  }
+
+  function handleBlur() {
+    const formatted = formatOnBlur(value, decimals);
+    onValueChange(formatted);
+    onBlur();
+  }
+
+  // Grid overlay: span sizes the cell, input fills it
+  return (
+    <div
+      style={{
+        display: "inline-grid",
+        alignItems: "center",
+        minWidth: "1ch",
+      }}
+    >
+      {/* Invisible sizer — mirrors input content to set cell width */}
+      <span
+        aria-hidden
+        style={{
+          ...fontStyle,
+          gridArea: "1 / 1",
+          visibility: "hidden",
+          whiteSpace: "pre",
+          pointerEvents: "none",
+          color: value ? "#08364b" : "rgba(8,54,75,0.5)",
+        }}
+      >
+        {value || placeholder}
+      </span>
+      <input
+        type="text"
+        inputMode="decimal"
+        size={1}
+        value={value}
+        placeholder={placeholder}
+        disabled={disabled}
+        onChange={handleChange}
+        onFocus={onFocus}
+        onBlur={handleBlur}
+        style={{
+          ...fontStyle,
+          gridArea: "1 / 1",
+          width: "100%",
+          minWidth: 0,
+          background: "transparent",
+          border: "none",
+          outline: "none",
+          color: "#08364b",
+          padding: 0,
+          cursor: disabled ? "not-allowed" : "text",
+        }}
+      />
+    </div>
+  );
+}
+
 export function DimensionInput({
   label,
   widthPlaceholder = "Width",
@@ -41,11 +160,24 @@ export function DimensionInput({
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   const hasError = Boolean(error);
+  const decimals = getDecimals(currentUnit);
 
   const handleUnitSelect = (unit: string) => {
     setCurrentUnit(unit);
     setDropdownOpen(false);
     onUnitChange?.(unit);
+    // Reformat existing values for the new unit's decimals
+    const newDecimals = getDecimals(unit);
+    if (internalWidth) {
+      const formatted = formatOnBlur(internalWidth, newDecimals);
+      setInternalWidth(formatted);
+      onWidthChange?.(formatted);
+    }
+    if (internalHeight) {
+      const formatted = formatOnBlur(internalHeight, newDecimals);
+      setInternalHeight(formatted);
+      onHeightChange?.(formatted);
+    }
   };
 
   React.useEffect(() => {
@@ -66,19 +198,6 @@ export function DimensionInput({
     ? "rgba(8, 54, 75, 0.3)"
     : "transparent";
 
-  const inputStyle: React.CSSProperties = {
-    width: "48px",
-    background: "transparent",
-    border: "none",
-    outline: "none",
-    color: "#08364b",
-    fontSize: "18px",
-    fontFamily: "'Halyard Display', sans-serif",
-    fontWeight: 400,
-    padding: 0,
-    cursor: disabled ? "not-allowed" : "text",
-  };
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "12px", fontFamily: "'Halyard Display', sans-serif" }}>
       {label && (
@@ -93,10 +212,10 @@ export function DimensionInput({
         onMouseLeave={() => setHovered(false)}
         style={{
           position: "relative",
-          display: "flex",
+          display: "inline-flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          height: "62px",
+          gap: "0",
+          minHeight: "62px",
           padding: "0 13px 0 20px",
           backgroundColor: "#f5ebcb",
           borderRadius: "4px",
@@ -104,37 +223,44 @@ export function DimensionInput({
           boxSizing: "border-box",
           opacity: disabled ? 0.5 : 1,
           transition: "border-color 0.15s ease",
+          width: "fit-content",
         }}
       >
         {/* Width input */}
-        <input
-          type="number"
+        <DimensionField
           value={internalWidth}
           placeholder={widthPlaceholder}
           disabled={disabled}
-          onChange={(e) => { setInternalWidth(e.target.value); onWidthChange?.(e.target.value); }}
+          decimals={decimals}
+          onValueChange={(val) => { setInternalWidth(val); onWidthChange?.(val); }}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          style={{ ...inputStyle }}
         />
 
         {/* Separator */}
-        <span style={{ color: "#08364b", fontSize: "18px", opacity: 0.5, flexShrink: 0, userSelect: "none" }}>x</span>
+        <span style={{
+          color: "#08364b",
+          fontSize: "18px",
+          opacity: 0.5,
+          flexShrink: 0,
+          userSelect: "none",
+          padding: "0 12px",
+          lineHeight: "62px",
+        }}>x</span>
 
         {/* Height input */}
-        <input
-          type="number"
+        <DimensionField
           value={internalHeight}
           placeholder={heightPlaceholder}
           disabled={disabled}
-          onChange={(e) => { setInternalHeight(e.target.value); onHeightChange?.(e.target.value); }}
+          decimals={decimals}
+          onValueChange={(val) => { setInternalHeight(val); onHeightChange?.(val); }}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          style={{ ...inputStyle }}
         />
 
         {/* Unit dropdown */}
-        <div style={{ flexShrink: 0 }}>
+        <div style={{ flexShrink: 0, marginLeft: "16px" }}>
           <button
             type="button"
             disabled={disabled}

@@ -88,7 +88,7 @@ export function Toggle({
             alignItems: "center",
             boxSizing: "border-box",
             flexShrink: 0,
-            transition: "background-color 0.2s ease",
+            transition: "background-color 0.2s ease-in-out",
             position: "relative",
           }}
         >
@@ -102,7 +102,7 @@ export function Toggle({
               flexShrink: 0,
               position: "absolute",
               left: isChecked ? "calc(100% - 22px)" : "2px",
-              transition: "left 0.2s ease",
+              transition: "left 0.2s ease-in-out",
               boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
             }}
           />
