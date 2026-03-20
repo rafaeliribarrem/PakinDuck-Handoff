@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PakinDuck — All States</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Halyard+Display:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#faf7f0;font-family:'Halyard Display',sans-serif;padding:48px 40px;min-height:100vh}
+h1{color:#08364b;font-size:13px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;margin-bottom:48px;opacity:.5}
+.section{margin-bottom:64px}
+.section-title{color:#08364b;font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;opacity:.4;padding-bottom:16px;border-bottom:1px solid rgba(8,54,75,.1);margin-bottom:20px}
+.states-row{display:flex;flex-wrap:wrap;gap:32px}
+.state-item{display:flex;flex-direction:column;gap:8px}
+.state-label{font-size:11px;color:#08364b;opacity:.35;letter-spacing:.06em;text-transform:uppercase;font-weight:500}
+.input-label{color:#08364b;font-size:18px;line-height:1;font-weight:400;margin-bottom:12px;display:block}
+.input-wrapper{display:flex;flex-direction:column}
+.error-msg{display:flex;align-items:center;gap:8px;margin-top:12px}
+.error-msg svg{width:16px;height:16px;flex-shrink:0}
+.error-msg span{color:#ee4646;font-size:18px;line-height:1}
+
+/* Text Input & Textarea */
+.text-input,.textarea{width:100%;border-radius:4px;background-color:#f5ebcb;color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif;font-weight:400;border:2px solid transparent;outline:none;transition:border-color .15s ease;appearance:none}
+.text-input{height:62px;padding:0 20px}
+.textarea{padding:25px 20px;line-height:1.15;resize:vertical}
+.text-input::placeholder,.textarea::placeholder{color:#08364b;opacity:.5}
+.text-input:hover,.textarea:hover{border-color:rgba(8,54,75,.3)}
+.text-input:focus,.textarea:focus{border-color:#08364b}
+.text-input.error,.textarea.error{border-color:#ee4646}
+
+/* Number with Unit */
+.number-field{position:relative;display:flex;align-items:center;justify-content:space-between;height:62px;border-radius:4px;background-color:#f5ebcb;border:2px solid transparent;padding:0 13px 0 20px;transition:border-color .15s ease;width:100%}
+.number-field:hover{border-color:rgba(8,54,75,.3)}
+.number-field:focus-within{border-color:#08364b}
+.number-field.error{border-color:#ee4646}
+.number-field input{flex:1;height:100%;background:transparent;border:none;outline:none;color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif;font-weight:400}
+.number-field input::placeholder{color:#08364b;opacity:.5}
+.number-field input::-webkit-inner-spin-button,.number-field input::-webkit-outer-spin-button{-webkit-appearance:none}
+.unit-wrapper{flex-shrink:0}
+.unit-btn{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:3px;background-color:rgba(8,54,75,.08);border:none;cursor:pointer;color:#08364b;font-size:14px;font-family:'Halyard Display',sans-serif;white-space:nowrap;transition:background-color .15s ease}
+.unit-btn:hover,.unit-btn.open{background-color:rgba(8,54,75,.15)}
+.unit-btn svg{width:14px;height:14px;transition:transform .15s ease}
+.unit-btn.open svg{transform:rotate(180deg)}
+.unit-dropdown{display:none;position:absolute;top:calc(100% + .5rem);right:0;background-color:#f5ebcb;border-radius:4px;padding:4px;flex-direction:column;gap:4px;min-width:92px;z-index:100;box-shadow:0 4px 16px rgba(8,54,75,.12)}
+.unit-dropdown.open{display:flex}
+.number-field>.unit-wrapper{position:static}
+.unit-option{display:flex;align-items:center;justify-content:space-between;height:36px;padding:0 8px;border-radius:3px;border:none;background:transparent;cursor:pointer;color:#08364b;font-size:14px;font-family:'Halyard Display',sans-serif;width:100%}
+.unit-option:hover{background-color:rgba(8,54,75,.08)}
+.unit-option svg{width:14px;height:14px}
+
+/* Stepper */
+.stepper-field{display:flex;align-items:center;gap:40px;height:62px;padding:0 24px;background-color:#f5ebcb;border-radius:4px;border:2px solid transparent;transition:border-color .15s ease;width:100%}
+.stepper-field:hover{border-color:rgba(8,54,75,.3)}
+.stepper-field:focus-within{border-color:#08364b}
+.stepper-field.error{border-color:#ee4646}
+.stepper-btn{background:none;border:none;padding:0;cursor:pointer;color:#08364b;display:flex;align-items:center;flex-shrink:0;transition:opacity .15s ease}
+.stepper-btn:hover{opacity:.5}
+.stepper-btn svg{width:14px;height:14px;stroke:#08364b;stroke-width:2;fill:none}
+.stepper-value{color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif;font-weight:400;line-height:1;min-width:19px;text-align:center;border:none;background:transparent;outline:none}
+.stepper-value::-webkit-inner-spin-button,.stepper-value::-webkit-outer-spin-button{-webkit-appearance:none}
+
+/* Currency */
+.currency-field{display:flex;align-items:center;gap:8px;height:62px;padding:0 20px;background-color:#f5ebcb;border-radius:4px;border:2px solid transparent;transition:border-color .15s ease;width:100%}
+.currency-field:hover{border-color:rgba(8,54,75,.3)}
+.currency-field:focus-within{border-color:#08364b}
+.currency-field.error{border-color:#ee4646}
+.currency-icon{display:flex;align-items:center;flex-shrink:0}
+.currency-field input{flex:1;height:100%;background:transparent;border:none;outline:none;color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif;font-weight:400}
+.currency-field input::placeholder{color:#08364b;opacity:.5}
+.currency-field input::-webkit-inner-spin-button,.currency-field input::-webkit-outer-spin-button{-webkit-appearance:none}
+
+/* Dimension */
+.dimension-field{position:relative;display:flex;align-items:center;justify-content:space-between;height:62px;padding:0 13px 0 20px;background-color:#f5ebcb;border-radius:4px;border:2px solid transparent;transition:border-color .15s ease;width:100%}
+.dimension-field:hover{border-color:rgba(8,54,75,.3)}
+.dimension-field:focus-within{border-color:#08364b}
+.dimension-field.error{border-color:#ee4646}
+.dimension-field input{width:48px;flex-shrink:0;background:transparent;border:none;outline:none;color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif;font-weight:400;padding:0}
+.dimension-field input::placeholder{color:#08364b;opacity:.5}
+.dimension-field input::-webkit-inner-spin-button,.dimension-field input::-webkit-outer-spin-button{-webkit-appearance:none}
+.dimension-sep{color:#08364b;font-size:18px;opacity:.5;flex-shrink:0;user-select:none}
+
+/* Toggle */
+.toggle-field{display:flex;align-items:center;justify-content:space-between;height:62px;padding:0 20px;background-color:#f5ebcb;border-radius:4px;border:2px solid transparent;width:100%;transition:border-color .15s ease;cursor:pointer}
+.toggle-field:hover{border-color:rgba(8,54,75,.3)}
+.toggle-field.error{border-color:#ee4646}
+.toggle-label{color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif}
+.toggle-track{width:44px;height:24px;border-radius:9000px;background-color:#cbc2b1;padding:2px;display:flex;align-items:center;justify-content:flex-end;cursor:pointer;transition:background-color .2s ease;flex-shrink:0}
+.toggle-track.on{background-color:#fd7638;justify-content:flex-start}
+.toggle-knob{width:20px;height:20px;border-radius:50%;background:white;flex-shrink:0}
+
+/* Yes/No */
+.yesno-group{display:flex;width:100%}
+.yesno-btn{flex:1;height:62px;background-color:#f5ebcb;border:2px solid transparent;cursor:pointer;color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif;display:flex;align-items:center;justify-content:space-between;padding:0 20px;transition:border-color .15s ease}
+.yesno-btn:first-child{border-radius:4px 0 0 4px}
+.yesno-btn:last-child{border-radius:0 4px 4px 0;margin-left:-2px}
+.yesno-btn:hover{border-color:rgba(8,54,75,.3);z-index:1}
+.yesno-btn.selected{border-color:#08364b;z-index:2}
+.yesno-btn svg{width:12px;height:12px;stroke:#08364b;stroke-width:2;fill:none}
+
+/* Pill */
+.pill-group{display:flex;flex-wrap:wrap;gap:8px}
+.pill-btn{height:48px;min-width:96px;padding:0 20px;border-radius:9000px;background-color:#f5ebcb;border:2px solid transparent;cursor:pointer;color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif;transition:border-color .15s ease;white-space:nowrap}
+.pill-btn:hover{border-color:rgba(8,54,75,.3)}
+.pill-btn.selected{border-color:#08364b}
+
+/* Dropdown */
+.dropdown-wrapper{position:relative;width:100%}
+.dropdown-btn{display:flex;align-items:center;justify-content:space-between;width:100%;height:62px;padding:0 20px;background-color:#f5ebcb;border-radius:4px;border:2px solid transparent;cursor:pointer;transition:border-color .15s ease;font-family:'Halyard Display',sans-serif;font-size:18px;color:#08364b;text-align:left}
+.dropdown-btn:hover{border-color:rgba(8,54,75,.3)}
+.dropdown-btn.open{border-color:#08364b}
+.dropdown-btn svg{flex-shrink:0;transition:transform .15s ease}
+.dropdown-btn.open svg{transform:rotate(180deg)}
+.dropdown-btn .placeholder{opacity:.5}
+.dropdown-menu{display:none;position:absolute;top:calc(100% + .5rem);left:0;right:0;background-color:#f5ebcb;border-radius:4px;padding:4px;flex-direction:column;z-index:100;box-shadow:0 4px 16px rgba(8,54,75,.12)}
+.dropdown-menu.open{display:flex}
+.dropdown-option{display:flex;align-items:center;justify-content:space-between;height:44px;padding:0 16px;border-radius:3px;border:none;background:transparent;cursor:pointer;color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif;width:100%;text-align:left}
+.dropdown-option:hover{background-color:rgba(8,54,75,.08)}
+.dropdown-option svg{width:16px;height:16px}
+.dropdown-option .check-icon{display:none;flex-shrink:0}
+.dropdown-option.selected .check-icon{display:block}
+
+/* Radio Button */
+.radio-group{display:flex;flex-direction:column;gap:24px;width:100%}
+.radio-item{display:flex;align-items:flex-start;gap:8px;cursor:pointer}
+.radio-circle{flex-shrink:0;width:14px;height:14px;border-radius:50%;border:1px solid rgba(8,54,75,.2);display:flex;align-items:center;justify-content:center;margin-top:2px}
+.radio-dot{width:6px;height:6px;border-radius:50%;background-color:#fd7638;opacity:0;transition:opacity .15s ease}
+.radio-item.selected .radio-circle{border-color:#fd7638}
+.radio-item.selected .radio-dot{opacity:1}
+.radio-text{display:flex;flex-direction:column;gap:8px;font-family:'Halyard Display',sans-serif;color:#08364b;font-size:18px}
+.radio-item.selected .radio-text>span:first-child{color:#fd7638}
+.radio-desc{color:#08364b;opacity:.5}
+
+/* Radio Card */
+.radio-card-group{display:flex;flex-direction:column;gap:8px;width:100%}
+.radio-card{display:flex;align-items:center;justify-content:space-between;height:80px;padding:8px 8px 8px 16px;background-color:#f5ebcb;border-radius:8px;border:1px solid rgba(8,54,75,.15);cursor:pointer;transition:border-color .15s ease}
+.radio-card:hover{border-color:rgba(8,54,75,.3)}
+.radio-card.selected{border-color:#fd7638}
+.radio-card-left{display:flex;align-items:flex-start;gap:8px}
+.radio-card-circle{flex-shrink:0;width:14px;height:14px;border-radius:50%;border:1px solid rgba(8,54,75,.2);display:flex;align-items:center;justify-content:center;margin-top:2px}
+.radio-card.selected .radio-card-circle{border-color:#fd7638}
+.radio-card-dot{width:6px;height:6px;border-radius:50%;background:#fd7638;opacity:0}
+.radio-card.selected .radio-card-dot{opacity:1}
+.radio-card-text{display:flex;flex-direction:column;gap:8px}
+.radio-card-label{color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif}
+.radio-card.selected .radio-card-label{color:#fd7638}
+.radio-card-desc{color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif;opacity:.5}
+.radio-card-img{width:64px;height:64px;border-radius:3px;background:rgba(8,54,75,.08);flex-shrink:0}
+
+/* Checkbox Card */
+.checkbox-card-group{display:flex;flex-direction:column;gap:8px;width:100%}
+.checkbox-card{display:flex;align-items:center;justify-content:space-between;height:80px;padding:8px 8px 8px 16px;background-color:#f5ebcb;border-radius:8px;border:1px solid rgba(8,54,75,.15);cursor:pointer;transition:border-color .15s ease}
+.checkbox-card:hover{border-color:rgba(8,54,75,.3)}
+.checkbox-card.selected{border-color:#fd7638}
+.checkbox-card-box{flex-shrink:0;width:14px;height:14px;border-radius:2px;border:1px solid rgba(8,54,75,.2);display:flex;align-items:center;justify-content:center;margin-top:2px}
+.checkbox-card.selected .checkbox-card-box{background:#fd7638;border-color:#fd7638}
+.checkbox-check{display:none}
+.checkbox-card.selected .checkbox-check{display:block}
+.checkbox-card.selected .radio-card-label{color:#fd7638}
+
+/* Date Picker */
+.datepicker-wrapper{position:relative;width:100%}
+.datepicker-trigger{display:flex;align-items:center;gap:8px;height:62px;padding:0 20px;background-color:#f5ebcb;border-radius:4px;border:2px solid transparent;cursor:pointer;width:100%;transition:border-color .15s ease;font-family:'Halyard Display',sans-serif;font-size:18px;color:#08364b}
+.datepicker-trigger:hover{border-color:rgba(8,54,75,.3)}
+.datepicker-trigger.open{border-color:#08364b}
+.datepicker-trigger svg{flex-shrink:0}
+.datepicker-placeholder{opacity:.5}
+.datepicker-cal{display:none;position:absolute;top:calc(100% + .5rem);left:0;background:#f5ebcb;border-radius:6px;border:1px solid rgba(0,0,0,.1);padding:12px;width:276px;z-index:100;box-shadow:0 4px 16px rgba(8,54,75,.12)}
+.datepicker-cal.open{display:block}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-month-label{color:#08364b;font-size:16px;font-family:'Halyard Display',sans-serif;font-weight:500}
+.cal-nav{width:28px;height:28px;border-radius:6px;border:1px solid rgba(24,24,27,.1);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cal-nav svg{width:16px;height:16px;stroke:#08364b;stroke-width:1.5;fill:none}
+.cal-grid{display:grid;grid-template-columns:repeat(7,36px);gap:2px}
+.cal-day-header{width:36px;height:21px;display:flex;align-items:center;justify-content:center;color:rgba(8,54,75,.5);font-size:14px;font-family:'Halyard Display',sans-serif}
+.cal-day{width:36px;height:36px;border-radius:6px;border:none;background:transparent;cursor:pointer;color:#08364b;font-size:14px;font-family:'Halyard Display',sans-serif;display:flex;align-items:center;justify-content:center}
+.cal-day:hover{background:rgba(8,54,75,.08)}
+.cal-day.other-month{color:#7f908b}
+.cal-day.today{background:rgba(255,255,255,.8)}
+.cal-day.selected{background:#08364b;color:white}
+
+/* File Upload */
+.file-field{display:flex;align-items:center;justify-content:space-between;height:72px;padding:0 24px 0 20px;background-color:#f5ebcb;border-radius:4px;border:2px solid transparent;cursor:pointer;width:100%;transition:border-color .15s ease;box-sizing:border-box}
+.file-field:hover{border-color:rgba(8,54,75,.3)}
+.file-field.error{border-color:#ee4646}
+.file-left{display:flex;gap:12px;align-items:center;flex:1;min-width:0;overflow:hidden}
+.file-choose{color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif;font-weight:400;flex-shrink:0}
+.file-name{color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif;font-weight:300;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-icon-btn{width:32px;height:32px;background:#fd7638;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.file-clear-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;border:none;background:none;padding:0}
+.file-error{display:flex;align-items:center;gap:8px;margin-top:4px}
+.file-error span{color:#ee4646;font-size:18px;line-height:1;font-family:'Halyard Display',sans-serif}
+/* Dropzone */
+.file-dropzone{background:#f5ebcb;border:1px dashed rgba(0,0,0,.1);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:40px;cursor:pointer;transition:border-color .15s ease;width:100%;box-sizing:border-box}
+.file-dropzone:hover{border-color:rgba(8,54,75,.3)}
+.file-dropzone.error{border-color:#ee4646}
+.file-dropzone-text{color:#08364b;font-size:18px;line-height:1.4;text-align:center;font-weight:400}
+/* File list items */
+.file-item{background:#f5ebcb;border-radius:4px;display:flex;gap:16px;align-items:flex-start;padding:16px;width:100%;box-sizing:border-box}
+.file-thumb{width:44px;height:44px;border-radius:4px;background:rgba(8,54,75,.1);overflow:hidden;flex-shrink:0}
+.file-thumb img{width:100%;height:100%;object-fit:cover}
+.file-item-info{flex:1;display:flex;flex-direction:column;gap:12px;min-width:0}
+.file-item-top{display:flex;align-items:center;width:100%}
+.file-item-meta{flex:1;display:flex;gap:12px;align-items:center;min-width:0}
+.file-item-name{color:#08364b;font-size:16px;font-weight:300;line-height:1.5;white-space:nowrap;flex-shrink:0}
+.file-item-size{color:#08364b;font-size:16px;font-weight:300;line-height:1.5;opacity:.5}
+.file-delete-btn{width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;background:none;padding:0;flex-shrink:0}
+.file-progress{display:flex;gap:24px;align-items:center;width:100%}
+.file-progress-bar{flex:1;height:12px;background:rgba(8,54,75,.1);border-radius:900px;overflow:hidden}
+.file-progress-fill{height:100%;background:#08364b;border-radius:900px;transition:width .3s ease}
+.file-progress-pct{color:#08364b;font-size:14px;font-weight:300;line-height:1.5;white-space:nowrap;flex-shrink:0}
+
+/* Color Picker */
+.color-picker{display:flex;flex-direction:column;gap:8px;width:100%}
+.color-preview{height:32px;width:100%;border-radius:4px;transition:background-color .1s}
+.color-gradient{position:relative;width:100%;height:160px;border-radius:4px;cursor:crosshair;background:linear-gradient(to bottom,transparent,black),linear-gradient(to right,white,var(--hue-color,#ff0000))}
+.color-crosshair{position:absolute;width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 0 0 1px rgba(0,0,0,.3);transform:translate(-50%,-50%);pointer-events:none}
+.color-hue{width:100%;height:12px;border-radius:9000px;cursor:pointer;background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);position:relative;margin-top:8px}
+.color-hue-thumb{position:absolute;width:16px;height:16px;border-radius:50%;top:-2px;border:2px solid white;box-shadow:0 0 0 1px rgba(0,0,0,.3);transform:translateX(-50%);pointer-events:none}
+.color-hex{display:flex;align-items:center;gap:6px;height:40px;padding:0 12px;background:#f5ebcb;border-radius:4px;border:2px solid transparent;transition:border-color .15s ease}
+.color-hex:focus-within{border-color:#08364b}
+.color-hex-prefix{color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif;opacity:.5}
+.color-hex input{flex:1;background:transparent;border:none;outline:none;color:#08364b;font-size:18px;font-family:'Halyard Display',sans-serif}
+</style>
+</head>
+<body>
+<h1>PakinDuck — Component States</h1>
+
+<!-- ═══ 1. TEXT INPUT ═══ -->
+<div class="section">
+<div class="section-title">Text Input (Single Line)</div>
+<div class="states-row">
+<div class="state-item" style="width:308px"><span class="state-label">Default</span><div class="input-wrapper"><label class="input-label">Label</label><input class="text-input" type="text" placeholder="Placeholder"/></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Active</span><div class="input-wrapper"><label class="input-label">Label</label><input class="text-input" type="text" placeholder="Placeholder" style="border-color:#08364b"/></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Filled</span><div class="input-wrapper"><label class="input-label">Label</label><input class="text-input" type="text" value="Hello World"/></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Hover</span><div class="input-wrapper"><label class="input-label">Label</label><input class="text-input" type="text" placeholder="Placeholder" style="border-color:rgba(8,54,75,0.3)"/></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Error</span><div class="input-wrapper"><label class="input-label">Label</label><input class="text-input error" type="text" placeholder="Placeholder"/><div class="error-msg"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#ee4646"/><path d="M8 4.5V8.5" stroke="#ee4646" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11" r=".75" fill="#ee4646"/></svg><span>Please fill out the form</span></div></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Required</span><div class="input-wrapper"><label class="input-label">Label *</label><input class="text-input" type="text" placeholder="Placeholder"/></div></div>
+</div></div>
+
+<!-- ═══ 2. TEXTAREA ═══ -->
+<div class="section">
+<div class="section-title">Textarea (Multiline)</div>
+<div class="states-row">
+<div class="state-item" style="width:308px"><span class="state-label">Default</span><div class="input-wrapper"><label class="input-label">Label</label><textarea class="textarea" rows="4" placeholder="Placeholder"></textarea></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Active</span><div class="input-wrapper"><label class="input-label">Label</label><textarea class="textarea" rows="4" placeholder="Placeholder" style="border-color:#08364b"></textarea></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Filled</span><div class="input-wrapper"><label class="input-label">Label</label><textarea class="textarea" rows="4">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</textarea></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Hover</span><div class="input-wrapper"><label class="input-label">Label</label><textarea class="textarea" rows="4" placeholder="Placeholder" style="border-color:rgba(8,54,75,0.3)"></textarea></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Error</span><div class="input-wrapper"><label class="input-label">Label</label><textarea class="textarea error" rows="4" placeholder="Placeholder" style="border-color:#ee4646"></textarea><div class="error-msg"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#ee4646"/><path d="M8 4.5V8.5" stroke="#ee4646" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11" r=".75" fill="#ee4646"/></svg><span>Please fill out the form</span></div></div></div>
+</div></div>
+
+<!-- ═══ 3. NUMBER WITH UNIT ═══ -->
+<div class="section">
+<div class="section-title">Number with Unit</div>
+<div class="states-row">
+<div class="state-item" style="width:308px"><span class="state-label">Default</span><div class="input-wrapper"><label class="input-label">Label</label><div class="number-field"><input type="number" placeholder="Placeholder"/><div class="unit-wrapper"><button class="unit-btn" onclick="toggleDropdown(this)">Unit<svg viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="unit-dropdown"><button class="unit-option" onclick="selectUnit(this,'Unit')">Unit <svg viewBox="0 0 14 14" fill="none"><path d="M2 7L5.5 10.5L12 3.5" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="unit-option" onclick="selectUnit(this,'Lorem')">Lorem</button><button class="unit-option" onclick="selectUnit(this,'Ipsum')">Ipsum</button></div></div></div></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Active</span><div class="input-wrapper"><label class="input-label">Label</label><div class="number-field" style="border-color:#08364b"><input type="number" placeholder="|"/><div class="unit-wrapper"><button class="unit-btn">Unit<svg viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Filled</span><div class="input-wrapper"><label class="input-label">Label</label><div class="number-field"><input type="number" value="42"/><div class="unit-wrapper"><button class="unit-btn">Unit<svg viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Hover</span><div class="input-wrapper"><label class="input-label">Label</label><div class="number-field" style="border-color:rgba(8,54,75,0.3)"><input type="number" placeholder="Placeholder"/><div class="unit-wrapper"><button class="unit-btn">Unit<svg viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Error</span><div class="input-wrapper"><label class="input-label">Label</label><div class="number-field error"><input type="number" placeholder="Placeholder"/><div class="unit-wrapper"><button class="unit-btn">Unit<svg viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div><div class="error-msg"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#ee4646"/><path d="M8 4.5V8.5" stroke="#ee4646" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11" r=".75" fill="#ee4646"/></svg><span>Please fill out the form</span></div></div></div>
+</div></div>
+
+<!-- ═══ 4. STEPPER ═══ -->
+<div class="section">
+<div class="section-title">Stepper</div>
+<div class="states-row">
+<div class="state-item" style="width:175px"><span class="state-label">Default</span><div class="input-wrapper"><label class="input-label">Number</label><div class="stepper-field" id="stepper-main"><button class="stepper-btn" onclick="stepperChange('stepper-main',-1)"><svg viewBox="0 0 14 14"><line x1="2" y1="7" x2="12" y2="7"/></svg></button><input class="stepper-value" type="number" value="10" id="stepper-main-val"/><button class="stepper-btn" onclick="stepperChange('stepper-main',1)"><svg viewBox="0 0 14 14"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></button></div></div></div>
+<div class="state-item" style="width:175px"><span class="state-label">Active</span><div class="input-wrapper"><label class="input-label">Number</label><div class="stepper-field" style="border-color:#08364b"><button class="stepper-btn"><svg viewBox="0 0 14 14"><line x1="2" y1="7" x2="12" y2="7"/></svg></button><span class="stepper-value">10</span><button class="stepper-btn"><svg viewBox="0 0 14 14"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></button></div></div></div>
+<div class="state-item" style="width:175px"><span class="state-label">Hover</span><div class="input-wrapper"><label class="input-label">Number</label><div class="stepper-field" style="border-color:rgba(8,54,75,0.3)"><button class="stepper-btn"><svg viewBox="0 0 14 14"><line x1="2" y1="7" x2="12" y2="7"/></svg></button><span class="stepper-value">10</span><button class="stepper-btn"><svg viewBox="0 0 14 14"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></button></div></div></div>
+<div class="state-item" style="width:185px"><span class="state-label">Error</span><div class="input-wrapper"><label class="input-label">Label</label><div class="stepper-field error"><button class="stepper-btn"><svg viewBox="0 0 14 14"><line x1="2" y1="7" x2="12" y2="7"/></svg></button><span class="stepper-value">10</span><button class="stepper-btn"><svg viewBox="0 0 14 14"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></button></div><div class="error-msg"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#ee4646"/><path d="M8 4.5V8.5" stroke="#ee4646" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11" r=".75" fill="#ee4646"/></svg><span>Please fill out the form</span></div></div></div>
+</div></div>
+
+<!-- ═══ 5. CURRENCY ═══ -->
+<div class="section">
+<div class="section-title">Currency Input</div>
+<div class="states-row">
+<div class="state-item" style="width:308px"><span class="state-label">Default</span><div class="input-wrapper"><label class="input-label">Label</label><div class="currency-field"><span class="currency-icon"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="16" viewBox="0 0 10 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.83347 0C5.2936 6.33333e-05 5.6668.373133 5.6668.833333V1.38932C6.89553 1.54356 8.1146 2.02981 8.95647 2.91341C9.2738 3.24655 9.26147 3.77368 8.92847 4.09115C8.59527 4.40851 8.06753 4.39563 7.75013 4.0625C7.26627 3.5548 6.5038 3.2121 5.6668 3.07161V7.11913C6.4702 7.32907 7.34513 7.57673 8.045 7.97133C8.4786 8.21587 8.8912 8.53967 9.19413 8.987C9.50367 9.44427 9.66673 9.984 9.6668 10.6003C9.6668 11.7239 9.07593 12.5729 8.2644 13.1217C7.53087 13.6177 6.6022 13.8834 5.6668 13.9675V14.5C5.6668 14.9602 5.2936 15.3333 4.83347 15.3333C4.37327 15.3333 4.00013 14.9602 4.00013 14.5V13.931C3.45674 13.8576 2.9208 13.7251 2.42133 13.5287C1.47955 13.1581.601767 12.5366.0997133 11.6055C-.118447 11.2005.0333401 10.6949.438253 10.4765C.843247 10.2585 1.34876 10.4096 1.56716 10.8145C1.82698 11.2963 2.33045 11.7021 3.03135 11.9779C3.33359 12.0967 3.6614 12.1846 4.00013 12.2441V8.39973C3.28105 8.19413 2.53547 7.93533 1.91873 7.54493C1.00365 6.96553.33344 6.07215.33344 4.71419C.333467 3.71245.79446 2.91503 1.47927 2.36068C2.1438 1.82287 3.0081 1.51707 3.88293 1.39583C3.92167 1.39047 3.961 1.38684 4.00013 1.38216V.833333C4.00013.373147 4.37327 8.66667e-05 4.83347 0ZM5.6668 12.2943C6.33853 12.2153 6.92027 12.0185 7.3308 11.7409C7.78107 11.4363 8.00013 11.0627 8.00013 10.6003C8.00007 10.2928 7.92353 10.0832 7.81393 9.9212C7.6976 9.74953 7.51073 9.58373 7.226 9.4232C6.80973 9.18853 6.28307 9.01613 5.6668 8.84573V12.2943ZM4.00013 3.06511C3.38303 3.16593 2.87256 3.37751 2.5281 3.65625C2.18349 3.93519 2.00013 4.27715 2.00011 4.71419C2.00011 5.40253 2.28851 5.80617 2.81065 6.13672C3.13824 6.34407 3.53973 6.507 4.00013 6.65627V3.06511Z" fill="#08364B"/></svg></span><input type="number" min="0" step="0.01" placeholder="Enter amount in USD"/></div></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Filled</span><div class="input-wrapper"><label class="input-label">Label</label><div class="currency-field"><span class="currency-icon"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="16" viewBox="0 0 10 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.83347 0C5.2936 6.33333e-05 5.6668.373133 5.6668.833333V1.38932C6.89553 1.54356 8.1146 2.02981 8.95647 2.91341C9.2738 3.24655 9.26147 3.77368 8.92847 4.09115C8.59527 4.40851 8.06753 4.39563 7.75013 4.0625C7.26627 3.5548 6.5038 3.2121 5.6668 3.07161V7.11913C6.4702 7.32907 7.34513 7.57673 8.045 7.97133C8.4786 8.21587 8.8912 8.53967 9.19413 8.987C9.50367 9.44427 9.66673 9.984 9.6668 10.6003C9.6668 11.7239 9.07593 12.5729 8.2644 13.1217C7.53087 13.6177 6.6022 13.8834 5.6668 13.9675V14.5C5.6668 14.9602 5.2936 15.3333 4.83347 15.3333C4.37327 15.3333 4.00013 14.9602 4.00013 14.5V13.931C3.45674 13.8576 2.9208 13.7251 2.42133 13.5287C1.47955 13.1581.601767 12.5366.0997133 11.6055C-.118447 11.2005.0333401 10.6949.438253 10.4765C.843247 10.2585 1.34876 10.4096 1.56716 10.8145C1.82698 11.2963 2.33045 11.7021 3.03135 11.9779C3.33359 12.0967 3.6614 12.1846 4.00013 12.2441V8.39973C3.28105 8.19413 2.53547 7.93533 1.91873 7.54493C1.00365 6.96553.33344 6.07215.33344 4.71419C.333467 3.71245.79446 2.91503 1.47927 2.36068C2.1438 1.82287 3.0081 1.51707 3.88293 1.39583C3.92167 1.39047 3.961 1.38684 4.00013 1.38216V.833333C4.00013.373147 4.37327 8.66667e-05 4.83347 0ZM5.6668 12.2943C6.33853 12.2153 6.92027 12.0185 7.3308 11.7409C7.78107 11.4363 8.00013 11.0627 8.00013 10.6003C8.00007 10.2928 7.92353 10.0832 7.81393 9.9212C7.6976 9.74953 7.51073 9.58373 7.226 9.4232C6.80973 9.18853 6.28307 9.01613 5.6668 8.84573V12.2943ZM4.00013 3.06511C3.38303 3.16593 2.87256 3.37751 2.5281 3.65625C2.18349 3.93519 2.00013 4.27715 2.00011 4.71419C2.00011 5.40253 2.28851 5.80617 2.81065 6.13672C3.13824 6.34407 3.53973 6.507 4.00013 6.65627V3.06511Z" fill="#08364B"/></svg></span><input type="number" min="0" step="0.01" value="25.00"/></div></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Error</span><div class="input-wrapper"><label class="input-label">Label</label><div class="currency-field error"><span class="currency-icon"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="16" viewBox="0 0 10 16" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.83347 0C5.2936 6.33333e-05 5.6668.373133 5.6668.833333V1.38932C6.89553 1.54356 8.1146 2.02981 8.95647 2.91341C9.2738 3.24655 9.26147 3.77368 8.92847 4.09115C8.59527 4.40851 8.06753 4.39563 7.75013 4.0625C7.26627 3.5548 6.5038 3.2121 5.6668 3.07161V7.11913C6.4702 7.32907 7.34513 7.57673 8.045 7.97133C8.4786 8.21587 8.8912 8.53967 9.19413 8.987C9.50367 9.44427 9.66673 9.984 9.6668 10.6003C9.6668 11.7239 9.07593 12.5729 8.2644 13.1217C7.53087 13.6177 6.6022 13.8834 5.6668 13.9675V14.5C5.6668 14.9602 5.2936 15.3333 4.83347 15.3333C4.37327 15.3333 4.00013 14.9602 4.00013 14.5V13.931C3.45674 13.8576 2.9208 13.7251 2.42133 13.5287C1.47955 13.1581.601767 12.5366.0997133 11.6055C-.118447 11.2005.0333401 10.6949.438253 10.4765C.843247 10.2585 1.34876 10.4096 1.56716 10.8145C1.82698 11.2963 2.33045 11.7021 3.03135 11.9779C3.33359 12.0967 3.6614 12.1846 4.00013 12.2441V8.39973C3.28105 8.19413 2.53547 7.93533 1.91873 7.54493C1.00365 6.96553.33344 6.07215.33344 4.71419C.333467 3.71245.79446 2.91503 1.47927 2.36068C2.1438 1.82287 3.0081 1.51707 3.88293 1.39583C3.92167 1.39047 3.961 1.38684 4.00013 1.38216V.833333C4.00013.373147 4.37327 8.66667e-05 4.83347 0ZM5.6668 12.2943C6.33853 12.2153 6.92027 12.0185 7.3308 11.7409C7.78107 11.4363 8.00013 11.0627 8.00013 10.6003C8.00007 10.2928 7.92353 10.0832 7.81393 9.9212C7.6976 9.74953 7.51073 9.58373 7.226 9.4232C6.80973 9.18853 6.28307 9.01613 5.6668 8.84573V12.2943ZM4.00013 3.06511C3.38303 3.16593 2.87256 3.37751 2.5281 3.65625C2.18349 3.93519 2.00013 4.27715 2.00011 4.71419C2.00011 5.40253 2.28851 5.80617 2.81065 6.13672C3.13824 6.34407 3.53973 6.507 4.00013 6.65627V3.06511Z" fill="#08364B"/></svg></span><input type="number" placeholder="Enter amount"/></div><div class="error-msg"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#ee4646"/><path d="M8 4.5V8.5" stroke="#ee4646" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11" r=".75" fill="#ee4646"/></svg><span>Please fill out the form</span></div></div></div>
+</div></div>
+
+<!-- ═══ 6. TOGGLE ═══ -->
+<div class="section">
+<div class="section-title">Toggle Switch</div>
+<div class="states-row">
+<div class="state-item" style="width:308px"><span class="state-label">Off (Default)</span><div class="toggle-field" onclick="toggleSwitch(this)"><span class="toggle-label">Placeholder</span><div class="toggle-track"><div class="toggle-knob"></div></div></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">On (Selected)</span><div class="toggle-field"><span class="toggle-label">Placeholder</span><div class="toggle-track on"><div class="toggle-knob"></div></div></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Hover</span><div class="toggle-field" style="border-color:rgba(8,54,75,0.3)"><span class="toggle-label">Placeholder</span><div class="toggle-track"><div class="toggle-knob"></div></div></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Error</span><div class="toggle-field error"><span class="toggle-label">Placeholder</span><div class="toggle-track"><div class="toggle-knob"></div></div></div></div>
+</div></div>
+
+<!-- ═══ 7. YES/NO ═══ -->
+<div class="section">
+<div class="section-title">Yes / No</div>
+<div class="states-row">
+<div class="state-item" style="width:200px"><span class="state-label">Default</span><div class="yesno-group"><button class="yesno-btn" onclick="selectYesNo(this)">Yes<svg viewBox="0 0 12 12"><path d="M1.5 6L4.5 9L10.5 3" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="yesno-btn" onclick="selectYesNo(this)">No<svg viewBox="0 0 12 12"><path d="M2 2L10 10M10 2L2 10" stroke-linecap="round"/></svg></button></div></div>
+<div class="state-item" style="width:200px"><span class="state-label">Yes Selected</span><div class="yesno-group"><button class="yesno-btn selected">Yes<svg viewBox="0 0 12 12"><path d="M1.5 6L4.5 9L10.5 3" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="yesno-btn">No<svg viewBox="0 0 12 12"><path d="M2 2L10 10M10 2L2 10" stroke-linecap="round"/></svg></button></div></div>
+<div class="state-item" style="width:200px"><span class="state-label">No Selected</span><div class="yesno-group"><button class="yesno-btn">Yes<svg viewBox="0 0 12 12"><path d="M1.5 6L4.5 9L10.5 3" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="yesno-btn selected">No<svg viewBox="0 0 12 12"><path d="M2 2L10 10M10 2L2 10" stroke-linecap="round"/></svg></button></div></div>
+</div></div>
+
+<!-- ═══ 8. PILL SELECT ═══ -->
+<div class="section">
+<div class="section-title">Pill Select</div>
+<div class="states-row">
+<div class="state-item"><span class="state-label">Default</span><div class="pill-group"><button class="pill-btn">Pill Text</button><button class="pill-btn">Pill Text</button><button class="pill-btn">Pill Text</button></div></div>
+<div class="state-item"><span class="state-label">1 Selected</span><div class="pill-group"><button class="pill-btn selected">Pill Text</button><button class="pill-btn">Pill Text</button><button class="pill-btn">Pill Text</button></div></div>
+<div class="state-item"><span class="state-label">Multi Selected</span><div class="pill-group"><button class="pill-btn selected" onclick="this.classList.toggle('selected')">Pill Text</button><button class="pill-btn selected" onclick="this.classList.toggle('selected')">Pill Text</button><button class="pill-btn" onclick="this.classList.toggle('selected')">Pill Text</button></div></div>
+</div></div>
+
+<!-- ═══ 9. DROPDOWN MULTI-SELECT ═══ -->
+<div class="section">
+<div class="section-title">Dropdown (Multi-select)</div>
+<div class="states-row">
+<div class="state-item" style="width:308px"><span class="state-label">Default</span><div class="input-wrapper"><label class="input-label">Label</label><div class="dropdown-wrapper"><button class="dropdown-btn" onclick="toggleDropdownSelect(this)"><span class="placeholder">Placeholder</span><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 8L11 14L17 8" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="dropdown-menu"><button class="dropdown-option" onclick="toggleMultiOption(this)">Option 1<svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="dropdown-option" onclick="toggleMultiOption(this)">Option 2<svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="dropdown-option" onclick="toggleMultiOption(this)">Option 3<svg class="check-icon" viewBox="0 0 16 16" fill="none"><path d="M3 8L6.5 11.5L13 4.5" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Selected</span><div class="input-wrapper"><label class="input-label">Label</label><div class="dropdown-wrapper"><button class="dropdown-btn"><span>Option 1, Option 2</span><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 8L11 14L17 8" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div></div>
+</div></div>
+
+<!-- ═══ 10. RADIO BUTTON ═══ -->
+<div class="section">
+<div class="section-title">Radio Button</div>
+<div class="states-row">
+<div class="state-item" style="width:292px"><span class="state-label">Default</span><div class="radio-item"><div class="radio-circle"><div class="radio-dot"></div></div><div class="radio-text"><span>Label</span><span class="radio-desc">Standard spacing for most use cases.</span></div></div></div>
+<div class="state-item" style="width:292px"><span class="state-label">Selected</span><div class="radio-item selected"><div class="radio-circle"><div class="radio-dot"></div></div><div class="radio-text"><span>Label</span><span class="radio-desc">Standard spacing for most use cases.</span></div></div></div>
+<div class="state-item" style="width:292px"><span class="state-label">List</span><div class="radio-group"><div class="radio-item selected" onclick="selectRadio(this)"><div class="radio-circle"><div class="radio-dot"></div></div><div class="radio-text"><span>Label</span><span class="radio-desc">Standard spacing for most use cases.</span></div></div><div class="radio-item" onclick="selectRadio(this)"><div class="radio-circle"><div class="radio-dot"></div></div><div class="radio-text"><span>Label</span><span class="radio-desc">Standard spacing for most use cases.</span></div></div><div class="radio-item" onclick="selectRadio(this)"><div class="radio-circle"><div class="radio-dot"></div></div><div class="radio-text"><span>Label</span><span class="radio-desc">Standard spacing for most use cases.</span></div></div></div></div>
+</div></div>
+
+<!-- ═══ 11. RADIO CARD ═══ -->
+<div class="section">
+<div class="section-title">Radio Card</div>
+<div class="states-row">
+<div class="state-item" style="width:480px"><span class="state-label">Default</span><div class="radio-card"><div class="radio-card-left"><div class="radio-card-circle"><div class="radio-card-dot"></div></div><div class="radio-card-text"><span class="radio-card-label">Label</span><span class="radio-card-desc">Standard spacing for most use cases.</span></div></div><div class="radio-card-img"></div></div></div>
+<div class="state-item" style="width:480px"><span class="state-label">Selected</span><div class="radio-card selected"><div class="radio-card-left"><div class="radio-card-circle"><div class="radio-card-dot"></div></div><div class="radio-card-text"><span class="radio-card-label">Label</span><span class="radio-card-desc">Standard spacing for most use cases.</span></div></div><div class="radio-card-img"></div></div></div>
+<div class="state-item" style="width:480px"><span class="state-label">List</span><div class="radio-card-group"><div class="radio-card selected" onclick="selectRadioCard(this)"><div class="radio-card-left"><div class="radio-card-circle"><div class="radio-card-dot"></div></div><div class="radio-card-text"><span class="radio-card-label">Label</span><span class="radio-card-desc">Standard spacing for most use cases.</span></div></div><div class="radio-card-img"></div></div><div class="radio-card" onclick="selectRadioCard(this)"><div class="radio-card-left"><div class="radio-card-circle"><div class="radio-card-dot"></div></div><div class="radio-card-text"><span class="radio-card-label">Label</span><span class="radio-card-desc">Standard spacing for most use cases.</span></div></div><div class="radio-card-img"></div></div></div></div>
+</div></div>
+
+<!-- ═══ 12. CHECKBOX CARD ═══ -->
+<div class="section">
+<div class="section-title">Checkbox Card</div>
+<div class="states-row">
+<div class="state-item" style="width:480px"><span class="state-label">Default</span><div class="checkbox-card"><div style="display:flex;align-items:flex-start;gap:8px"><div class="checkbox-card-box"><svg class="checkbox-check" width="6" height="6" viewBox="0 0 6 6" fill="none"><path d="M.75 3L2.25 4.5L5.25 1.5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="radio-card-text"><span class="radio-card-label">Label</span><span class="radio-card-desc">Standard spacing for most use cases.</span></div></div><div class="radio-card-img"></div></div></div>
+<div class="state-item" style="width:480px"><span class="state-label">Selected</span><div class="checkbox-card selected"><div style="display:flex;align-items:flex-start;gap:8px"><div class="checkbox-card-box"><svg class="checkbox-check" width="6" height="6" viewBox="0 0 6 6" fill="none"><path d="M.75 3L2.25 4.5L5.25 1.5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="radio-card-text"><span class="radio-card-label">Label</span><span class="radio-card-desc">Standard spacing for most use cases.</span></div></div><div class="radio-card-img"></div></div></div>
+<div class="state-item" style="width:480px"><span class="state-label">List</span><div class="checkbox-card-group"><div class="checkbox-card selected" onclick="this.classList.toggle('selected')"><div style="display:flex;align-items:flex-start;gap:8px"><div class="checkbox-card-box"><svg class="checkbox-check" width="6" height="6" viewBox="0 0 6 6" fill="none"><path d="M.75 3L2.25 4.5L5.25 1.5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="radio-card-text"><span class="radio-card-label">Label</span><span class="radio-card-desc">Standard spacing for most use cases.</span></div></div><div class="radio-card-img"></div></div><div class="checkbox-card" onclick="this.classList.toggle('selected')"><div style="display:flex;align-items:flex-start;gap:8px"><div class="checkbox-card-box"><svg class="checkbox-check" width="6" height="6" viewBox="0 0 6 6" fill="none"><path d="M.75 3L2.25 4.5L5.25 1.5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="radio-card-text"><span class="radio-card-label">Label</span><span class="radio-card-desc">Standard spacing for most use cases.</span></div></div><div class="radio-card-img"></div></div></div></div>
+</div></div>
+
+<!-- ═══ 13. DATE PICKER ═══ -->
+<div class="section">
+<div class="section-title">Date Picker</div>
+<div class="states-row">
+<div class="state-item" style="width:308px"><span class="state-label">Interactive</span><div class="datepicker-wrapper"><button class="datepicker-trigger" id="datepicker-btn" onclick="toggleDatepicker()"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="4" width="16" height="15" rx="2" stroke="#08364b" stroke-width="1.5"/><path d="M7 2v4M15 2v4M3 9h16" stroke="#08364b" stroke-width="1.5" stroke-linecap="round"/></svg><span class="datepicker-placeholder" id="datepicker-val">Pick a date</span></button><div class="datepicker-cal" id="datepicker-cal"><div class="cal-header"><button class="cal-nav" onclick="calNav(-1)"><svg viewBox="0 0 16 16"><path d="M10 3L5 8L10 13" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="cal-month-label" id="cal-month-label">March 2026</span><button class="cal-nav" onclick="calNav(1)"><svg viewBox="0 0 16 16"><path d="M6 3L11 8L6 13" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div><div class="cal-grid"><div class="cal-day-header">Su</div><div class="cal-day-header">Mo</div><div class="cal-day-header">Tu</div><div class="cal-day-header">We</div><div class="cal-day-header">Th</div><div class="cal-day-header">Fr</div><div class="cal-day-header">Sa</div><div id="cal-days"></div></div></div></div></div>
+</div></div>
+
+<!-- ═══ 14. FILE UPLOAD ═══ -->
+<div class="section">
+<div class="section-title">File Upload</div>
+<div class="states-row" style="align-items:flex-start">
+
+<!-- Simple: Default (interactive) -->
+<div class="state-item" style="width:384px"><span class="state-label">Default</span>
+<div style="display:flex;flex-direction:column;gap:16px;width:100%">
+<span style="color:#08364b;font-size:20px;line-height:1.5;font-weight:400">Question Label</span>
+<div class="file-field" id="fu-field-1" onclick="document.getElementById('fu-input-1').click()">
+<div class="file-left">
+<span class="file-choose">Choose file</span>
+<span class="file-name" id="fu-name-1" style="opacity:.5">No file choosen</span>
+</div>
+<div id="fu-icon-1" class="file-icon-btn"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 14V5a1 1 0 011-1h4l2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H3a1 1 0 01-1-1z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 8v5M9 8L7 10M9 8l2 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<input type="file" id="fu-input-1" style="display:none" onchange="fuHandleSelect(this, 'fu-name-1', 'fu-icon-1')"/>
+</div>
+</div></div>
+
+<!-- Simple: Filled (static) -->
+<div class="state-item" style="width:384px"><span class="state-label">Filled</span>
+<div style="display:flex;flex-direction:column;gap:16px;width:100%">
+<span style="color:#08364b;font-size:20px;line-height:1.5;font-weight:400">Question Label</span>
+<div class="file-field">
+<div class="file-left">
+<span class="file-choose">Choose file</span>
+<span class="file-name" style="opacity:1">Long file na...base.xlsx</span>
+</div>
+<button class="file-clear-btn" onclick="event.stopPropagation()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#fd7638" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+</div>
+</div></div>
+
+<!-- Simple: Error (static) -->
+<div class="state-item" style="width:384px"><span class="state-label">Error</span>
+<div style="display:flex;flex-direction:column;gap:16px;width:100%">
+<span style="color:#08364b;font-size:20px;line-height:1.5;font-weight:400">Question Label</span>
+<div class="file-field error">
+<div class="file-left">
+<span class="file-choose">Choose file</span>
+<span class="file-name" style="opacity:.5">No file choosen</span>
+</div>
+<div class="file-icon-btn"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 14V5a1 1 0 011-1h4l2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H3a1 1 0 01-1-1z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 8v5M9 8L7 10M9 8l2 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+</div>
+<div class="file-error"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#ee4646" stroke-width="2"/><path d="M12 8v4M12 16h.01" stroke="#ee4646" stroke-width="2" stroke-linecap="round"/></svg><span>File too big</span></div>
+</div></div>
+
+<!-- Simple: Disabled (static) -->
+<div class="state-item" style="width:384px"><span class="state-label">Disabled</span>
+<div style="display:flex;flex-direction:column;gap:16px;width:100%">
+<span style="color:#08364b;font-size:20px;line-height:1.5;font-weight:400">Question Label</span>
+<div class="file-field" style="opacity:.5;cursor:not-allowed;pointer-events:none">
+<div class="file-left">
+<span class="file-choose">Choose file</span>
+<span class="file-name" style="opacity:.5">No file choosen</span>
+</div>
+<div class="file-icon-btn"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 14V5a1 1 0 011-1h4l2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H3a1 1 0 01-1-1z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 8v5M9 8L7 10M9 8l2 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+</div>
+</div></div>
+
+</div></div>
+
+<!-- ═══ 14b. FILE UPLOAD DROPZONE ═══ -->
+<div class="section">
+<div class="section-title">File Upload — Dropzone + Multiple</div>
+<div class="states-row" style="align-items:flex-start">
+
+<!-- Dropzone: Default (interactive) -->
+<div class="state-item" style="width:384px"><span class="state-label">Default</span>
+<div style="display:flex;flex-direction:column;gap:8px;width:100%">
+<div class="file-dropzone" id="fu-dropzone" onclick="document.getElementById('fu-dz-input').click()" ondragover="event.preventDefault();this.style.borderColor='#08364b'" ondragleave="this.style.borderColor='rgba(0,0,0,.1)'" ondrop="event.preventDefault();this.style.borderColor='rgba(0,0,0,.1)';fuDropzoneAdd(event.dataTransfer.files)">
+<div class="file-icon-btn"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 14V5a1 1 0 011-1h4l2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H3a1 1 0 01-1-1z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 8v5M9 8L7 10M9 8l2 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="file-dropzone-text">Upload a project image<br/>or, click to browse (4MB max)</div>
+<input type="file" id="fu-dz-input" multiple style="display:none" onchange="fuDropzoneAdd(this.files);this.value=''"/>
+</div>
+<div id="fu-file-list"></div>
+</div></div>
+
+<!-- Dropzone: With Files (static) -->
+<div class="state-item" style="width:384px"><span class="state-label">With Files</span>
+<div style="display:flex;flex-direction:column;gap:8px;width:100%">
+<div class="file-dropzone">
+<div class="file-icon-btn"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 14V5a1 1 0 011-1h4l2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H3a1 1 0 01-1-1z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 8v5M9 8L7 10M9 8l2 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="file-dropzone-text">Upload a project image<br/>or, click to browse (4MB max)</div>
+</div>
+<!-- File item 1 -->
+<div class="file-item">
+<div class="file-thumb"><div style="width:100%;height:100%;background:linear-gradient(135deg,#c9a96e,#8b6914)"></div></div>
+<div class="file-item-info">
+<div class="file-item-top"><div class="file-item-meta"><span class="file-item-name">Filename.png</span><span class="file-item-size">3,2MB</span></div>
+<button class="file-delete-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14" stroke="#ee4646" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+<div class="file-progress"><div class="file-progress-bar"><div class="file-progress-fill" style="width:80%"></div></div><span class="file-progress-pct">80%</span></div>
+</div></div>
+<!-- File item 2 -->
+<div class="file-item">
+<div class="file-thumb"><div style="width:100%;height:100%;background:linear-gradient(135deg,#c9a96e,#8b6914)"></div></div>
+<div class="file-item-info">
+<div class="file-item-top"><div class="file-item-meta"><span class="file-item-name">Filename.png</span><span class="file-item-size">3,2MB</span></div>
+<button class="file-delete-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14" stroke="#ee4646" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+<div class="file-progress"><div class="file-progress-bar"><div class="file-progress-fill" style="width:80%"></div></div><span class="file-progress-pct">80%</span></div>
+</div></div>
+</div></div>
+
+<!-- Dropzone: Error (static) -->
+<div class="state-item" style="width:384px"><span class="state-label">Error</span>
+<div style="display:flex;flex-direction:column;gap:12px;width:100%">
+<div class="file-dropzone error">
+<div class="file-icon-btn"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 14V5a1 1 0 011-1h4l2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H3a1 1 0 01-1-1z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 8v5M9 8L7 10M9 8l2 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="file-dropzone-text">Upload a project image<br/>or, click to browse (4MB max)</div>
+</div>
+<div class="file-error"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#ee4646" stroke-width="2"/><path d="M12 8v4M12 16h.01" stroke="#ee4646" stroke-width="2" stroke-linecap="round"/></svg><span>File too big</span></div>
+</div></div>
+
+</div></div>
+
+<!-- ═══ 15. COLOR PICKER ═══ -->
+<div class="section">
+<div class="section-title">Color Picker</div>
+<div class="states-row">
+<div class="state-item" style="width:308px"><span class="state-label">Interactive</span><div class="input-wrapper"><label class="input-label">Color</label><div class="color-picker"><div class="color-preview" id="color-preview" style="background:#ff0000"></div><div class="color-gradient" id="color-gradient" style="--hue-color:#ff0000" onmousedown="startGradientDrag(event)"><div class="color-crosshair" id="color-crosshair" style="left:100%;top:0%"></div></div><div class="color-hue" id="color-hue" onmousedown="startHueDrag(event)"><div class="color-hue-thumb" id="color-hue-thumb" style="left:0%"></div></div><div class="color-hex"><span class="color-hex-prefix">#</span><input type="text" id="color-hex-input" value="ff0000" maxlength="6" oninput="updateFromHex(this.value)"/></div></div></div></div>
+</div></div>
+
+<!-- ═══ 16. DIMENSION 2D ═══ -->
+<div class="section">
+<div class="section-title">Dimension 2D</div>
+<div class="states-row">
+<div class="state-item" style="width:308px"><span class="state-label">Default</span><div class="input-wrapper"><label class="input-label">Dimensions</label><div class="dimension-field"><input type="number" placeholder="Width"/><span class="dimension-sep">x</span><input type="number" placeholder="Length"/><div class="unit-wrapper"><button class="unit-btn" onclick="toggleDropdown(this)">Cm<svg viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="unit-dropdown"><button class="unit-option" onclick="selectUnit(this,'Cm')">Cm</button><button class="unit-option" onclick="selectUnit(this,'m')">m</button><button class="unit-option" onclick="selectUnit(this,'mm')">mm</button></div></div></div></div></div>
+<div class="state-item" style="width:308px"><span class="state-label">Filled</span><div class="input-wrapper"><label class="input-label">Dimensions</label><div class="dimension-field"><input type="number" value="25"/><span class="dimension-sep">x</span><input type="number" value="30"/><div class="unit-wrapper"><button class="unit-btn">Cm<svg viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div></div></div>
+</div></div>
+
+<!-- ═══ 17. DIMENSION 3D ═══ -->
+<div class="section">
+<div class="section-title">Dimension 3D</div>
+<div class="states-row">
+<div class="state-item" style="width:360px"><span class="state-label">Default</span><div class="input-wrapper"><label class="input-label">Dimensions</label><div class="dimension-field"><input type="number" placeholder="Width" style="width:44px"/><span class="dimension-sep">x</span><input type="number" placeholder="Length" style="width:44px"/><span class="dimension-sep">x</span><input type="number" placeholder="Height" style="width:44px"/><div class="unit-wrapper"><button class="unit-btn" onclick="toggleDropdown(this)">Cm<svg viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button><div class="unit-dropdown"><button class="unit-option" onclick="selectUnit(this,'Cm')">Cm</button><button class="unit-option" onclick="selectUnit(this,'m')">m</button></div></div></div></div></div>
+<div class="state-item" style="width:360px"><span class="state-label">Filled</span><div class="input-wrapper"><label class="input-label">Dimensions</label><div class="dimension-field"><input type="number" value="25" style="width:44px"/><span class="dimension-sep">x</span><input type="number" value="30" style="width:44px"/><span class="dimension-sep">x</span><input type="number" value="15" style="width:44px"/><div class="unit-wrapper"><button class="unit-btn">Cm<svg viewBox="0 0 14 14" fill="none"><path d="M2 4.5L7 9.5L12 4.5" stroke="#08364b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div></div></div></div>
+</div></div>
+
+<script>
+function toggleDropdown(btn){var d=btn.nextElementSibling;var o=d.classList.contains('open');closeAllUnitDropdowns();if(!o){d.classList.add('open');btn.classList.add('open')}}
+function selectUnit(opt,u){var d=opt.closest('.unit-dropdown');var b=d.previousElementSibling;b.childNodes[0].textContent=u;closeAllUnitDropdowns()}
+function closeAllUnitDropdowns(){document.querySelectorAll('.unit-dropdown.open').forEach(function(d){d.classList.remove('open')});document.querySelectorAll('.unit-btn.open').forEach(function(b){b.classList.remove('open')})}
+function stepperChange(id,delta){var inp=document.getElementById(id+'-val');inp.value=Math.max(0,(parseInt(inp.value)||0)+delta)}
+function toggleSwitch(f){f.querySelector('.toggle-track').classList.toggle('on')}
+function selectYesNo(b){var g=b.closest('.yesno-group');g.querySelectorAll('.yesno-btn').forEach(function(x){x.classList.remove('selected')});b.classList.add('selected')}
+function selectRadioCard(c){var g=c.closest('.radio-card-group');g.querySelectorAll('.radio-card').forEach(function(x){x.classList.remove('selected')});c.classList.add('selected')}
+function selectRadio(i){var g=i.closest('.radio-group');g.querySelectorAll('.radio-item').forEach(function(x){x.classList.remove('selected')});i.classList.add('selected')}
+function toggleDropdownSelect(btn){var m=btn.nextElementSibling;var o=m.classList.contains('open');document.querySelectorAll('.dropdown-menu.open').forEach(function(x){x.classList.remove('open');if(x.previousElementSibling)x.previousElementSibling.classList.remove('open')});if(!o){m.classList.add('open');btn.classList.add('open')}}
+function toggleMultiOption(opt){opt.classList.toggle('selected');var m=opt.closest('.dropdown-menu');var btn=m.previousElementSibling;var sp=btn.querySelector('span');var sel=[];m.querySelectorAll('.dropdown-option.selected').forEach(function(o){sel.push(o.firstChild.textContent.trim())});if(sel.length===0){sp.textContent='Placeholder';sp.classList.add('placeholder')}else{sp.textContent=sel.join(', ');sp.classList.remove('placeholder')}}
+var calYear=2026,calMonth=2,calSelected=null;
+var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var TODAY=new Date();
+function toggleDatepicker(){var c=document.getElementById('datepicker-cal');var b=document.getElementById('datepicker-btn');var o=c.classList.contains('open');c.classList.toggle('open',!o);b.classList.toggle('open',!o);if(!o)renderCalendar()}
+function renderCalendar(){document.getElementById('cal-month-label').textContent=MONTHS[calMonth]+' '+calYear;var fd=new Date(calYear,calMonth,1).getDay();var dm=new Date(calYear,calMonth+1,0).getDate();var dp=new Date(calYear,calMonth,0).getDate();var g=document.getElementById('cal-days');while(g.firstChild)g.removeChild(g.firstChild);for(var i=0;i<42;i++){var day,cls='cal-day',mo=calMonth,yr=calYear;if(i<fd){day=dp-fd+1+i;mo=calMonth-1;cls+=' other-month'}else if(i>=fd+dm){day=i-fd-dm+1;mo=calMonth+1;cls+=' other-month'}else{day=i-fd+1}var isT=day===TODAY.getDate()&&calMonth===TODAY.getMonth()&&calYear===TODAY.getFullYear()&&cls.indexOf('other')<0;var isS=calSelected&&calSelected.d===day&&calSelected.m===mo&&calSelected.y===yr;if(isT&&!isS)cls+=' today';if(isS)cls+=' selected';var b=document.createElement('button');b.className=cls;b.textContent=String(day);b.style.gridColumn=String((i%7)+1);(function(d,m,y){b.addEventListener('click',function(){selectDay(d,m,y)})})(day,mo,yr);g.appendChild(b)}g.style.cssText='display:contents'}
+function selectDay(d,m,y){if(m<0){m=11;y--}else if(m>11){m=0;y++}calSelected={d:d,m:m,y:y};var v=document.getElementById('datepicker-val');v.textContent=MONTHS[m]+' '+d+', '+y;v.classList.remove('datepicker-placeholder');document.getElementById('datepicker-cal').classList.remove('open');document.getElementById('datepicker-btn').classList.remove('open')}
+function calNav(dir){calMonth+=dir;if(calMonth<0){calMonth=11;calYear--}if(calMonth>11){calMonth=0;calYear++}renderCalendar()}
+var hue=0,saturation=100,brightness=100;
+function svToHsl(h,s,v){var l=v*(1-s/200);var sl=l===0||l===100?0:(v-l)/Math.min(l,100-l)*100;return[h,sl,l]}
+function hslToHex(h,s,l){s/=100;l/=100;var k=function(n){return(n+h/30)%12};var a=s*Math.min(l,1-l);var f=function(n){return l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)))};return[f(0),f(8),f(4)].map(function(x){return Math.round(x*255).toString(16).padStart(2,'0')}).join('')}
+function updateColorUI(){var r=svToHsl(hue,saturation,brightness);var hex=hslToHex(r[0],r[1],r[2]);var hh=hslToHex(hue,100,50);document.getElementById('color-preview').style.backgroundColor='#'+hex;document.getElementById('color-hex-input').value=hex;document.getElementById('color-gradient').style.background='linear-gradient(to bottom,transparent,black),linear-gradient(to right,white,#'+hh+')';document.getElementById('color-crosshair').style.left=saturation+'%';document.getElementById('color-crosshair').style.top=(100-brightness)+'%';document.getElementById('color-hue-thumb').style.left=(hue/360*100)+'%'}
+var dragging=null;
+function startGradientDrag(e){dragging='gradient';updateGradient(e)}
+function startHueDrag(e){dragging='hue';updateHue(e)}
+function updateGradient(e){var r=document.getElementById('color-gradient').getBoundingClientRect();saturation=Math.max(0,Math.min(100,(e.clientX-r.left)/r.width*100));brightness=Math.max(0,Math.min(100,100-(e.clientY-r.top)/r.height*100));updateColorUI()}
+function updateHue(e){var r=document.getElementById('color-hue').getBoundingClientRect();hue=Math.max(0,Math.min(360,(e.clientX-r.left)/r.width*360));updateColorUI()}
+function updateFromHex(v){if(/^[0-9a-fA-F]{6}$/.test(v))document.getElementById('color-preview').style.backgroundColor='#'+v}
+document.addEventListener('mousemove',function(e){if(dragging==='gradient')updateGradient(e);if(dragging==='hue')updateHue(e)});
+document.addEventListener('mouseup',function(){dragging=null});
+document.addEventListener('mousedown',function(e){if(!e.target.closest('.unit-wrapper'))closeAllUnitDropdowns();if(!e.target.closest('.datepicker-wrapper')){var c=document.getElementById('datepicker-cal');var b=document.getElementById('datepicker-btn');if(c){c.classList.remove('open');b.classList.remove('open')}}if(!e.target.closest('.dropdown-wrapper')){document.querySelectorAll('.dropdown-menu.open').forEach(function(m){m.classList.remove('open');if(m.previousElementSibling)m.previousElementSibling.classList.remove('open')})}});
+
+/* File Upload — interactive simple field */
+function fuHandleSelect(input, nameId, iconId) {
+  var nameEl = document.getElementById(nameId);
+  var iconEl = document.getElementById(iconId);
+  if (input.files && input.files[0]) {
+    /* Show filename */
+    var name = input.files[0].name;
+    if (name.length > 24) {
+      var ext = name.lastIndexOf('.');
+      if (ext > 0) { name = name.slice(0, 14) + '...' + name.slice(ext); }
+      else { name = name.slice(0, 21) + '...'; }
+    }
+    nameEl.textContent = name;
+    nameEl.style.opacity = '1';
+    /* Swap icon to X (clear) */
+    iconEl.className = 'file-clear-btn';
+    iconEl.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#fd7638" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    iconEl.onclick = function(e) { e.stopPropagation(); fuHandleClear(nameId, iconId, input.id); };
+  }
+  input.value = '';
+}
+
+/* File Upload — Dropzone: add files with animated progress */
+function fuDropzoneAdd(files) {
+  var list = document.getElementById('fu-file-list');
+  if (!list || !files) return;
+  for (var i = 0; i < files.length; i++) {
+    (function(f) {
+      var id = 'fu-item-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+      var isImg = f.type && f.type.startsWith('image/');
+      var thumbUrl = isImg ? URL.createObjectURL(f) : '';
+      var size = f.size < 1024 ? f.size + 'B' : f.size < 1048576 ? (f.size / 1024).toFixed(1) + 'KB' : (f.size / 1048576).toFixed(1) + 'MB';
+      var name = f.name;
+      if (name.length > 24) {
+        var ext = name.lastIndexOf('.');
+        if (ext > 0) name = name.slice(0, 14) + '...' + name.slice(ext);
+        else name = name.slice(0, 21) + '...';
+      }
+      var html = '<div class="file-item" id="' + id + '">'
+        + '<div class="file-thumb">' + (isImg ? '<img src="' + thumbUrl + '" alt=""/>' : '<div style="width:100%;height:100%;background:rgba(8,54,75,.08)"></div>') + '</div>'
+        + '<div class="file-item-info">'
+        + '<div class="file-item-top"><div class="file-item-meta"><span class="file-item-name">' + name + '</span><span class="file-item-size">' + size + '</span></div>'
+        + '<button class="file-delete-btn" onclick="fuRemoveFile(\'' + id + '\')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14" stroke="#ee4646" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>'
+        + '<div class="file-progress" id="' + id + '-prog"><div class="file-progress-bar"><div class="file-progress-fill" id="' + id + '-bar" style="width:0%"></div></div><span class="file-progress-pct" id="' + id + '-pct">0%</span></div>'
+        + '</div></div>';
+      list.insertAdjacentHTML('beforeend', html);
+      var prog = 0;
+      var iv = setInterval(function() {
+        prog += Math.random() * 20 + 10;
+        if (prog >= 100) { prog = 100; clearInterval(iv);
+          setTimeout(function() { var p = document.getElementById(id + '-prog'); if (p) p.style.display = 'none'; }, 400);
+        }
+        var bar = document.getElementById(id + '-bar');
+        var pct = document.getElementById(id + '-pct');
+        if (bar) bar.style.width = Math.round(prog) + '%';
+        if (pct) pct.textContent = Math.round(prog) + '%';
+      }, 300);
+    })(files[i]);
+  }
+}
+function fuRemoveFile(id) { var el = document.getElementById(id); if (el) { el.style.transition = 'opacity .2s ease'; el.style.opacity = '0'; setTimeout(function() { el.remove(); }, 200); } }
+
+function fuHandleClear(nameId, iconId, inputId) {
+  var nameEl = document.getElementById(nameId);
+  var iconEl = document.getElementById(iconId);
+  /* Reset filename */
+  nameEl.textContent = 'No file choosen';
+  nameEl.style.opacity = '.5';
+  /* Swap icon back to folder upload */
+  iconEl.className = 'file-icon-btn';
+  iconEl.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 14V5a1 1 0 011-1h4l2 2h6a1 1 0 011 1v7a1 1 0 01-1 1H3a1 1 0 01-1-1z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 8v5M9 8L7 10M9 8l2 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  iconEl.onclick = null;
+}
+</script>
+</body>
+</html>
